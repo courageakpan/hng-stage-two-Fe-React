@@ -14,7 +14,6 @@ const App: React.FC = () => {
       <div className="absolute top-10 left-10 w-24 h-24 bg-blue-200 rounded-full opacity-60 z-0"></div>
       <div className="absolute bottom-20 right-10 w-56 h-56 bg-blue-300 rounded-full opacity-50 z-0"></div>
 
-      {/* App Content */}
       <div className="relative z-10">
         {/* Header / Navbar */}
         {page === "landing" && (
@@ -37,7 +36,6 @@ const App: React.FC = () => {
           </header>
         )}
 
-        {/* Landing Page */}
         {page === "landing" && (
           <section className="flex flex-col items-center justify-center text-center px-6 py-24">
             <div className="absolute inset-0 bg-gradient-to-b from-blue-50 to-white clip-path-wave"></div>
@@ -65,7 +63,6 @@ const App: React.FC = () => {
           </section>
         )}
 
-        {/* Login Page */}
         {page === "login" && (
           <section className="flex items-center justify-center py-20">
             <div className="bg-white shadow-lg rounded-xl p-8 w-full max-w-md">
@@ -104,7 +101,6 @@ const App: React.FC = () => {
           </section>
         )}
 
-        {/* Signup Page */}
         {page === "signup" && (
           <section className="flex items-center justify-center py-20">
             <div className="bg-white shadow-lg rounded-xl p-8 w-full max-w-md">
@@ -150,7 +146,6 @@ const App: React.FC = () => {
           </section>
         )}
 
-        {/* Dashboard & Tickets */}
         {(page === "dashboard" || page === "tickets") && (
           <div className="flex min-h-screen">
             {/* Sidebar */}
@@ -199,7 +194,6 @@ const App: React.FC = () => {
                 </nav>
               </header>
 
-              {/* Dashboard Cards */}
               {page === "dashboard" && (
                 <section className="p-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                   {[
@@ -219,7 +213,6 @@ const App: React.FC = () => {
                 </section>
               )}
 
-              {/* Tickets Table */}
               {page === "tickets" && (
                 <section className="p-8">
                   <div className="bg-white rounded-xl shadow-md overflow-hidden">
@@ -298,7 +291,6 @@ const App: React.FC = () => {
           </div>
         )}
 
-        {/* Footer */}
         <footer className="text-center py-4 bg-blue-50 text-gray-600 text-sm">
           © {new Date().getFullYear()} TicketPro. All rights reserved.
         </footer>
