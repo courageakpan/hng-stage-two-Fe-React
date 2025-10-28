@@ -1,8 +1,116 @@
-import { useState } from "react";
+import React, { useState } from "react";
+
+interface Ticket {
+  id: number;
+  subject: string;
+  priority: string;
+  assignee: string;
+  status: string;
+  updated: string;
+}
 
 const App: React.FC = () => {
   const [page, setPage] = useState("landing");
   const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  // Tickets state
+  const [tickets, setTickets] = useState<Ticket[]>([
+    {
+      id: 1024,
+      subject: "API latency issue",
+      priority: "Medium",
+      assignee: "User 1",
+      status: "Open",
+      updated: "Oct 23, 2025",
+    },
+    {
+      id: 1025,
+      subject: "Email failed",
+      priority: "Low",
+      assignee: "User 2",
+      status: "Closed",
+      updated: "Oct 24, 2025",
+    },
+    {
+      id: 1026,
+      subject: "Login not working",
+      priority: "High",
+      assignee: "User 3",
+      status: "Open",
+      updated: "Oct 25, 2025",
+    },
+  ]);
+
+  // Form state for adding/editing
+  const [form, setForm] = useState<Omit<Ticket, "id">>({
+    subject: "",
+    priority: "Low",
+    assignee: "",
+    status: "Open",
+    updated: new Date().toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    }),
+  });
+
+  const [editId, setEditId] = useState<number | null>(null);
+
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
+    const { name, value } = e.target;
+    setForm({ ...form, [name]: value });
+  };
+
+  const handleAddOrUpdateTicket = () => {
+    if (!form.subject.trim() || !form.assignee.trim()) return;
+
+    if (editId) {
+      setTickets((prev) =>
+        prev.map((t) => (t.id === editId ? { ...t, ...form } : t))
+      );
+      setEditId(null);
+    } else {
+      const newTicket: Ticket = {
+        id: Math.max(...tickets.map((t) => t.id), 0) + 1,
+        ...form,
+      };
+      setTickets([...tickets, newTicket]);
+    }
+
+    setForm({
+      subject: "",
+      priority: "Low",
+      assignee: "",
+      status: "Open",
+      updated: new Date().toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      }),
+    });
+  };
+
+  const handleEdit = (id: number) => {
+    const t = tickets.find((ticket) => ticket.id === id);
+    if (t) {
+      setForm({
+        subject: t.subject,
+        priority: t.priority,
+        assignee: t.assignee,
+        status: t.status,
+        updated: t.updated,
+      });
+      setEditId(id);
+    }
+  };
+
+  const handleDelete = (id: number) => {
+    if (confirm("Are you sure you want to delete this ticket?")) {
+      setTickets((prev) => prev.filter((t) => t.id !== id));
+    }
+  };
 
   const navClass = (p: string) =>
     `block w-full text-left py-2 px-4 rounded-lg font-medium ${
@@ -15,7 +123,7 @@ const App: React.FC = () => {
       <div className="absolute top-10 left-10 w-24 h-24 bg-blue-200 rounded-full opacity-60 z-0"></div>
       <div className="absolute bottom-20 right-10 w-56 h-56 bg-blue-300 rounded-full opacity-50 z-0"></div>
 
-      <div className="relative z-10">
+      <div className="relative z-10 max-w-[1440px] mx-auto">
         {/* Header / Navbar */}
         {page === "landing" && (
           <header className="bg-white shadow-sm py-4 px-4 sm:px-8 flex justify-between items-center">
@@ -190,35 +298,16 @@ const App: React.FC = () => {
               </div>
             </aside>
 
-            {/* Overlay for Mobile Sidebar */}
-            {sidebarOpen && (
-              <div
-                onClick={() => setSidebarOpen(false)}
-                className="fixed inset-0 bg-black bg-opacity-30 md:hidden z-10"
-              ></div>
-            )}
-
             {/* Main Content */}
             <main className="flex-1 flex flex-col mt-16 md:mt-0">
               <header className="fixed md:static top-0 left-0 right-0 bg-white shadow-sm py-3 sm:py-4 px-4 sm:px-8 flex justify-between items-center z-10">
                 <h2 className="text-lg sm:text-xl font-semibold capitalize">{page}</h2>
-                <div className="flex items-center space-x-4">
-                  <button
-                    onClick={() => setSidebarOpen(true)}
-                    className="md:hidden text-gray-600 hover:text-blue-600"
-                  >
-                    ☰
-                  </button>
-                  <button
-                    onClick={() => setPage("tickets")}
-                    className="hidden md:inline text-gray-700 hover:text-blue-600 font-medium"
-                  >
-                    Tickets
-                  </button>
-                  <button className="hidden md:inline text-gray-700 hover:text-blue-600 font-medium">
-                    Settings
-                  </button>
-                </div>
+                <button
+                  onClick={() => setSidebarOpen(true)}
+                  className="md:hidden text-gray-600 hover:text-blue-600"
+                >
+                  ☰
+                </button>
               </header>
 
               {page === "dashboard" && (
@@ -243,12 +332,56 @@ const App: React.FC = () => {
               {page === "tickets" && (
                 <section className="p-4 sm:p-8 mt-4">
                   <div className="bg-white rounded-xl shadow-md overflow-hidden">
-                    <div className="flex flex-col sm:flex-row justify-between gap-4 sm:gap-0 items-center border-b p-4">
-                      <h3 className="text-base sm:text-lg font-semibold">Manage Tickets</h3>
-                      <button className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition text-sm sm:text-base">
-                        + New Ticket
-                      </button>
+                    <div className="border-b p-4">
+                      <h3 className="text-base sm:text-lg font-semibold mb-3">
+                        Manage Tickets
+                      </h3>
+
+                      {/* Inline Add/Edit Form */}
+                      <div className="grid grid-cols-1 sm:grid-cols-5 gap-3 mb-4">
+                        <input
+                          name="subject"
+                          value={form.subject}
+                          onChange={handleInputChange}
+                          placeholder="Subject"
+                          className="border rounded-lg p-2 text-sm"
+                        />
+                        <select
+                          name="priority"
+                          value={form.priority}
+                          onChange={handleInputChange}
+                          className="border rounded-lg p-2 text-sm"
+                        >
+                          <option value="Low">Low</option>
+                          <option value="Medium">Medium</option>
+                          <option value="High">High</option>
+                        </select>
+                        <input
+                          name="assignee"
+                          value={form.assignee}
+                          onChange={handleInputChange}
+                          placeholder="Assignee"
+                          className="border rounded-lg p-2 text-sm"
+                        />
+                        <select
+                          name="status"
+                          value={form.status}
+                          onChange={handleInputChange}
+                          className="border rounded-lg p-2 text-sm"
+                        >
+                          <option value="Open">Open</option>
+                          <option value="In Progress">In Progress</option>
+                          <option value="Closed">Closed</option>
+                        </select>
+                        <button
+                          onClick={handleAddOrUpdateTicket}
+                          className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 text-sm"
+                        >
+                          {editId ? "Update" : "Add"} Ticket
+                        </button>
+                      </div>
                     </div>
+
                     <div className="overflow-x-auto">
                       <table className="min-w-full text-left text-xs sm:text-sm">
                         <thead className="bg-gray-50 border-b text-gray-600">
@@ -259,27 +392,32 @@ const App: React.FC = () => {
                             <th className="py-3 px-4 sm:px-6">Assignee</th>
                             <th className="py-3 px-4 sm:px-6">Status</th>
                             <th className="py-3 px-4 sm:px-6">Updated</th>
+                            <th className="py-3 px-4 sm:px-6 text-right">Actions</th>
                           </tr>
                         </thead>
                         <tbody>
-                          {[1, 2, 3].map((i) => (
-                            <tr key={i} className="border-b hover:bg-gray-50">
-                              <td className="py-3 px-4 sm:px-6 font-medium">#102{i + 3}</td>
-                              <td className="py-3 px-4 sm:px-6">
-                                {i === 1 ? "API latency issue" : i === 2 ? "Email failed" : "Login not working"}
+                          {tickets.map((t) => (
+                            <tr key={t.id} className="border-b hover:bg-gray-50">
+                              <td className="py-3 px-4 sm:px-6 font-medium">#{t.id}</td>
+                              <td className="py-3 px-4 sm:px-6">{t.subject}</td>
+                              <td className="py-3 px-4 sm:px-6">{t.priority}</td>
+                              <td className="py-3 px-4 sm:px-6">{t.assignee}</td>
+                              <td className="py-3 px-4 sm:px-6">{t.status}</td>
+                              <td className="py-3 px-4 sm:px-6">{t.updated}</td>
+                              <td className="py-3 px-4 sm:px-6 text-right space-x-2">
+                                <button
+                                  onClick={() => handleEdit(t.id)}
+                                  className="text-blue-600 hover:underline text-xs"
+                                >
+                                  Edit
+                                </button>
+                                <button
+                                  onClick={() => handleDelete(t.id)}
+                                  className="text-red-600 hover:underline text-xs"
+                                >
+                                  Delete
+                                </button>
                               </td>
-                              <td className="py-3 px-4 sm:px-6">
-                                <span className="px-3 py-1 text-xs font-medium bg-blue-100 text-blue-700 rounded-full">
-                                  {i === 1 ? "Medium" : i === 2 ? "Low" : "High"}
-                                </span>
-                              </td>
-                              <td className="py-3 px-4 sm:px-6">User {i}</td>
-                              <td className="py-3 px-4 sm:px-6">
-                                <span className="px-3 py-1 text-xs font-medium bg-green-100 text-green-700 rounded-full">
-                                  {i === 2 ? "Closed" : "Open"}
-                                </span>
-                              </td>
-                              <td className="py-3 px-4 sm:px-6">Oct {22 + i}, 2025</td>
                             </tr>
                           ))}
                         </tbody>
